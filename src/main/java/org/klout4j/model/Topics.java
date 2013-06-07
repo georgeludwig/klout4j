@@ -1,4 +1,4 @@
-package org.klout4j;
+package org.klout4j.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Topics implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unchecked")
-	protected Topics(Map<String, Object> attributes) {
+	public Topics(Map<String, Object> attributes) {
 		twitterScreenName = (String)attributes.get("twitter_screen_name");
 		JSONArray a=(JSONArray)attributes.get("topics");
 		topics=new ArrayList<String>();

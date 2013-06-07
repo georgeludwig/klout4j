@@ -1,4 +1,4 @@
-package org.klout4j;
+package org.klout4j.model;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public class KloutScore implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected KloutScore(Map<String, Object> attributes) {
+	public KloutScore(Map<String, Object> attributes) {
 		twitterScreenName = (String) attributes.get("twitter_screen_name");
 		kscore = Double.parseDouble(attributes.get("kscore").toString());
 	}
