@@ -1,4 +1,4 @@
-package org.klout4j;
+package org.klout4j.model;
 
 import java.util.Map;
 
@@ -18,7 +18,7 @@ public class KloutUser implements java.io.Serializable {
 	 * @param attributes
 	 */
 	@SuppressWarnings("unchecked")
-	protected KloutUser(Map<String, Object> attributes) {
+	public KloutUser(Map<String, Object> attributes) {
 		twitterId = Long.parseLong(attributes.get("twitter_id").toString());
 		twitterScreenName = (String) attributes.get("twitter_screen_name");
 		Map<String, Object> scoreAttributes=(Map<String, Object>)attributes.get("score");
