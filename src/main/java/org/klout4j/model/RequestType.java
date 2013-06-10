@@ -1,12 +1,14 @@
 package org.klout4j.model;
 
+import java.text.MessageFormat;
+
 /**
  * An enum indicating what type of JSON call is to be made
+ *
  * @author George
  * @see org.klout4j.service.impl.KloutImpl
  */
 public enum RequestType {
-	IDENTITY("identity.json/{0}/{1}"),
     SHOW_USER("user.json/{0}"),
     KLOUT_SCORE("/user.json/{0}/score"),
     TOPICS("/user.json/{0}/topics"),
@@ -18,7 +20,7 @@ public enum RequestType {
         this.path = path;
     }
 
-    public String getPath() {
-        return path;
+    public String getPath(Long id) {
+        return MessageFormat.format(path, id.toString());
     }
 }

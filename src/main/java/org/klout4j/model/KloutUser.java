@@ -4,206 +4,105 @@ import java.util.Map;
 
 /**
  * A class representing a Klout user. Contains details on the user's Klout score.
- * 
+ * Response example:
+ * {
+ * "kloutId": "635263",
+ * "nick": "jtimberlake",
+ * "score": {
+ * "score": 92.21004781265579,
+ * "bucket": "90-100"
+ * },
+ * "scoreDeltas": {
+ * "dayChange": -0.071824172738431,
+ * "weekChange": -0.20777379569214816,
+ * "monthChange": -0.3548751682149742
+ * }
+ * }
+ *
  * @author George
- * 
  */
 public class KloutUser implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor that takes a map of properties.
-	 * 
-	 * @param attributes
-	 */
-	@SuppressWarnings("unchecked")
-	public KloutUser(Map<String, Object> attributes) {
-		twitterId = Long.parseLong(attributes.get("twitter_id").toString());
-		twitterScreenName = (String) attributes.get("twitter_screen_name");
-		Map<String, Object> scoreAttributes=(Map<String, Object>)attributes.get("score");
-		kscore = Double.parseDouble(scoreAttributes.get("kscore").toString());
-		kscoreDescription=(String) scoreAttributes.get("kscore_description");
-		slope = Double.parseDouble(scoreAttributes.get("slope").toString());
-		description = (String) scoreAttributes.get("description");
-		kclassId = scoreAttributes.get("kclass_id").toString();
-		kclass = (String) scoreAttributes.get("kclass");
-		kclassDescription = (String) scoreAttributes.get("kclass_description");
-		networkScore = Double.parseDouble(scoreAttributes.get("network_score")
-				.toString());
-		amplificationScore = Double.parseDouble(scoreAttributes.get(
-				"amplification_score").toString());
-		trueReach = Long.parseLong(scoreAttributes.get("true_reach").toString());
-		delta1Day = Double.parseDouble(scoreAttributes.get("delta_1day").toString());
-		delta5Day = Double.parseDouble(scoreAttributes.get("delta_5day").toString());
-	}
+    private Long kloutId;
+    private String screenName;
+    private Double score;
+    private String bucket;
+    private Double scoreDayChange;
+    private Double scoreWeekChange;
+    private Double scoreMonthChange;
 
-	long twitterId;
 
-	/**
-	 * returns the Twitter id of this KloutUser
-	 * 
-	 * @return
-	 */
-	public long getTwitterId() {
-		return twitterId;
-	}
+    /**
+     * Constructor that takes a map of properties.
+     *
+     * @param attributes
+     */
+    @SuppressWarnings("unchecked")
+    public KloutUser(Map<String, Object> attributes) {
+        kloutId = Long.parseLong(attributes.get("kloutId").toString());
+        screenName = (String) (attributes.get("nick"));
+        Map<String, Object> scoreAttributes = (Map<String, Object>) attributes.get("score");
+        score = Double.parseDouble(scoreAttributes.get("score").toString());
+        bucket = (String) scoreAttributes.get("bucket");
+        Map<String, Object> scoreDeltas = (Map<String, Object>) attributes.get("scoreDeltas");
+        scoreDayChange = Double.parseDouble(scoreDeltas.get("dayChange").toString());
+        scoreWeekChange = Double.parseDouble(scoreDeltas.get("weekChange").toString());
+        scoreMonthChange = Double.parseDouble(scoreDeltas.get("monthChange").toString());
+    }
 
-	String twitterScreenName;
+    public Long getKloutId() {
+        return kloutId;
+    }
 
-	/**
-	 * returns the Twitter screen name of this KloutUser
-	 * 
-	 * @return
-	 */
-	public String getTwitterScreenName() {
-		return twitterScreenName;
-	}
+    public String getScreenName() {
+        return screenName;
+    }
 
-	private double kscore = 0;
+    public Double getScore() {
+        return score;
+    }
 
-	/**
-	 * returns the Klout score as a double
-	 * 
-	 * @return
-	 */
-	public double getKscore() {
-		return kscore;
-	}
+    public String getBucket() {
+        return bucket;
+    }
 
-	private double slope = 0;
+    public Double getScoreDayChange() {
+        return scoreDayChange;
+    }
 
-	/**
-	 * returns the score slope as a double
-	 * 
-	 * @return
-	 */
-	public double getSlope() {
-		return slope;
-	}
+    public Double getScoreWeekChange() {
+        return scoreWeekChange;
+    }
 
-	private String description;
+    public Double getScoreMonthChange() {
+        return scoreMonthChange;
+    }
 
-	/**
-	 * returns the score description
-	 * 
-	 * @return
-	 */
-	public String getDescription() {
-		return description;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	private String kclassId;
+        KloutUser kloutUser = (KloutUser) o;
 
-	/**
-	 * returns the kclass
-	 * 
-	 * @return
-	 */
-	public String getKclassId() {
-		return kclassId;
-	}
+        return !(kloutId != null ? !kloutId.equals(kloutUser.kloutId) : kloutUser.kloutId != null);
 
-	private String kclass;
+    }
 
-	/**
-	 * returns the kclass
-	 * 
-	 * @return
-	 */
-	public String getKclass() {
-		return kclass;
-	}
+    @Override
+    public int hashCode() {
+        return kloutId != null ? kloutId.hashCode() : 0;
+    }
 
-	private String kclassDescription;
-
-	/**
-	 * returns the kclass description
-	 * 
-	 * @return
-	 */
-	public String getKclassDescription() {
-		return kclassDescription;
-	}
-
-	private String kscoreDescription;
-
-	/**
-	 * returns the kscore description
-	 * 
-	 * @return
-	 */
-	public String getKscoreDescription() {
-		return kscoreDescription;
-	}
-
-	double networkScore = 0;
-
-	/**
-	 * returns the network score
-	 * 
-	 * @return
-	 */
-	public double getNetworkScore() {
-		return networkScore;
-	}
-
-	private double amplificationScore = 0;
-
-	/**
-	 * returns the amplification score
-	 * 
-	 * @return
-	 */
-	public double getAmplificationScore() {
-		return amplificationScore;
-	}
-
-	private long trueReach = 0;
-
-	/**
-	 * returns true reach
-	 * 
-	 * @return
-	 */
-	public long getTrueReach() {
-		return trueReach;
-	}
-
-	private double delta1Day = 0;
-
-	/**
-	 * returns the 1 day delta
-	 * 
-	 * @return
-	 */
-	public double getDelta1Day() {
-		return delta1Day;
-	}
-
-	private double delta5Day = 0;
-
-	/**
-	 * returns the 5 day delta
-	 * 
-	 * @return
-	 */
-	public double getDelta5Day() {
-		return delta5Day;
-	}
-
-	/**
-	 * returns a basic string representation of this KloutUser. Note: not
-	 * suitable for serialization as it does not contain all the user data
-	 * 
-	 */
-	public String toString() {
-		return "KloutUser[twitterId=" + twitterId + ",twitterScreenName="
-				+ twitterScreenName + ",kscore=" + kscore + ",slope=" + slope
-				+ ",description=" + description + ",kclassId=" + kclassId
-				+ ",kclass=" + kclass + ",kclassDescription="
-				+ kclassDescription + ",kscoreDescription=" + kscoreDescription
-				+ ",networkScore=" + networkScore + ",amplificationScore="
-				+ amplificationScore + ",trueReach=" + trueReach + "]";
-	}
+    @Override
+    public String toString() {
+        return "KloutUser{" +
+                "kloutId=" + kloutId +
+                ", screenName='" + screenName + '\'' +
+                ", score=" + score +
+                ", bucket='" + bucket + '\'' +
+                '}';
+    }
 }
