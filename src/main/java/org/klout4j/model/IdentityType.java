@@ -8,11 +8,11 @@ import java.text.MessageFormat;
  * @author Marina Chernyavskaya
  */
 public enum IdentityType {
-    twitterId("/tw/{0}?"),
-    twitterScreenName("/twitter?screenName={0}&"),
-    googlePlus("/gp/{0}?"),
-    instagram("/ig/{0}?"),
-    kloutId("klout/{0}/tw?");
+    twitterId("identity.json/tw/{0}?"),
+    twitterScreenName("identity.json/twitter?screenName={0}&"),
+    googlePlus("identity.json/gp/{0}?"),
+    instagram("identity.json/ig/{0}?"),
+    kloutId("identity.json/klout/{0}/tw?");
 
     private String path;
 
@@ -21,6 +21,6 @@ public enum IdentityType {
     }
 
     public String getPath(Object id) {
-        return MessageFormat.format(path, id);
+        return MessageFormat.format(path, id.toString());
     }
 }

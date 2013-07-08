@@ -1,20 +1,17 @@
 package org.klout4j.service.impl;
 
+import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.klout4j.exception.KloutException;
 import org.klout4j.exception.ProfileNotFoundException;
-import org.klout4j.model.KloutScore;
-import org.klout4j.model.KloutUser;
-import org.klout4j.model.RequestType;
-import org.klout4j.model.Topics;
+import org.klout4j.model.*;
 import org.klout4j.service.Klout;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,54 +117,28 @@ public class KloutImpl implements Klout {
         this.readTimeout = readTimeout;
     }
 
-    public Long getKloutId(Long twitterId) {
-        // TODO
-        return null;
-    }
-
-    public Long getKloutId(String twitterScreenName) {
-        // TODO
-        return null;
-    }
-
-    /**
-     * Returns the KloutScore for the twitter user <p>
-     * Throws ProfileNotFoundException if the twitter screen name is not found
-     *
-     * @param kloutId Klout ID
-     * @return KloutScore Score object
-     * @throws org.klout4j.exception.ProfileNotFoundException Profile Not Found Exception
-     * @throws org.klout4j.exception.KloutException           Generic Klout Exception
-     */
-    public KloutScore kloutScore(Long kloutId) throws ProfileNotFoundException, KloutException {
-        Map<String, KloutScore> users = kloutScore(Collections.singletonList(kloutId));
-        if (users.isEmpty()) {
-            throw new ProfileNotFoundException(kloutId);
-        } else {
-            return users.entrySet().iterator().next().getValue();
-        }
-    }
-
-    /**
-     * Returns a map of KloutScore keyed by twitter screen name<p>
-     * Throws ProfileNotFoundException if any of the twitter screen names are not found
-     *
-     * @param kloutIds Klout IDS
-     * @return KloutScore
-     * @throws ProfileNotFoundException
-     * @throws KloutException
-     */
-    public Map<String, KloutScore> kloutScore(List<Long> kloutIds) throws ProfileNotFoundException, KloutException {
-        logger.fine("Topics for users: " + kloutIds);
-        Map<String, KloutScore> kloutScoreByTwitterScreenName = new LinkedHashMap<String, KloutScore>();
-        List<Map<String, Object>> userAttrList = callJSON(RequestType.KLOUT_SCORE, kloutIds);
-        if (userAttrList != null) {
-            for (Map<String, Object> userAttrs : userAttrList) {
-                KloutScore kloutScore = new KloutScore(userAttrs);
-                kloutScoreByTwitterScreenName.put(kloutScore.getTwitterScreenName(), kloutScore);
+    @SuppressWarnings("unchecked")
+    public Long getKloutId(Long twitterId) throws KloutException {
+        Object response = callJSON(getIdentityRequestString(IdentityType.twitterId, twitterId));
+        if (response != null && response instanceof Map) {
+            Map<String, String> map = (Map<String, String>) response;
+            if (map.containsKey("id")) {
+                return Long.parseLong(map.get("id"));
             }
         }
-        return kloutScoreByTwitterScreenName;
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Long getKloutId(String twitterScreenName) throws KloutException {
+        Object response = callJSON(getIdentityRequestString(IdentityType.twitterScreenName, twitterScreenName));
+        if (response != null && response instanceof Map) {
+            Map<String, String> map = (Map<String, String>) response;
+            if (map.containsKey("id")) {
+                return Long.parseLong(map.get("id"));
+            }
+        }
+        return null;
     }
 
     /**
@@ -180,39 +151,11 @@ public class KloutImpl implements Klout {
      * @throws ProfileNotFoundException
      * @throws KloutException
      */
+    @SuppressWarnings("unchecked")
     public KloutUser showUser(Long kloutId)
             throws ProfileNotFoundException, KloutException {
-        Map<String, KloutUser> users = showUsers(Collections.singletonList(kloutId));
-        if (users.isEmpty()) {
-            throw new ProfileNotFoundException(kloutId);
-        } else {
-            return users.entrySet().iterator().next().getValue();
-        }
-    }
-
-    /**
-     * Returns a Map of KloutUser keyed on the twitter screen name.<p>
-     * Throws ProfileNotFoundException if any of the twitter screen names are
-     * not found.
-     *
-     * @param kloutIds Klout IDS
-     * @return Map<String, KloutUser>
-     * @throws ProfileNotFoundException
-     * @throws KloutException
-     * @throws ProfileNotFoundException
-     */
-    public Map<String, KloutUser> showUsers(List<Long> kloutIds)
-            throws ProfileNotFoundException, KloutException {
-        logger.fine("Showing users: " + kloutIds);
-        Map<String, KloutUser> usersByTwitterScreenName = new LinkedHashMap<String, KloutUser>();
-        List<Map<String, Object>> userAttrList = callJSON(RequestType.SHOW_USER, kloutIds);
-        if (userAttrList != null) {
-            for (Map<String, Object> userAttrs : userAttrList) {
-                KloutUser user = new KloutUser(userAttrs);
-                usersByTwitterScreenName.put(user.getTwitterScreenName(), user);
-            }
-        }
-        return usersByTwitterScreenName;
+        Map<String, Object> data = (Map<String, Object>) callJSON(getRequestString(RequestType.SHOW_USER, kloutId));
+        return new KloutUser(data);
     }
 
     /**
@@ -224,58 +167,34 @@ public class KloutImpl implements Klout {
      * @throws ProfileNotFoundException
      * @throws KloutException
      */
+    @SuppressWarnings("unchecked")
     public Topics topics(Long kloutId) throws ProfileNotFoundException, KloutException {
-        Map<String, Topics> users = topics(Collections.singletonList(kloutId));
-        if (users.isEmpty()) {
-            throw new ProfileNotFoundException(kloutId);
-        } else {
-            return users.entrySet().iterator().next().getValue();
-        }
-    }
-
-    /**
-     * returns a Map of Topics keyed to twitter screen name. <p>
-     * Throws ProfileNotFoundException if any of the twitter screen names are not found
-     *
-     * @param kloutIds Klout IDS
-     * @return Map Map of  &lt;String,Topics&gt;
-     * @throws ProfileNotFoundException
-     * @throws KloutException
-     */
-    public Map<String, Topics> topics(List<Long> kloutIds) throws ProfileNotFoundException, KloutException {
-        logger.fine("Topics for users: " + kloutIds);
-        Map<String, Topics> topicsByTwitterScreenName = new LinkedHashMap<String, Topics>();
-        List<Map<String, Object>> userAttrList = callJSON(RequestType.TOPICS, kloutIds);
-        if (userAttrList != null) {
-            for (Map<String, Object> userAttrs : userAttrList) {
-                Topics topics = new Topics(userAttrs);
-                topicsByTwitterScreenName.put(topics.getTwitterScreenName(), topics);
-            }
-        }
-        return topicsByTwitterScreenName;
+        JSONArray data = (JSONArray) callJSON(getRequestString(RequestType.TOPICS, kloutId));
+        return new Topics(data);
     }
 
     @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> callJSON(RequestType requestType, List<Long> kloutIds) throws KloutException {
-        String urlString;
+    public KloutScore kloutScore(Long kloutId) throws KloutException {
+        Map<String, Object> data = (Map<String, Object>) callJSON(getRequestString(RequestType.KLOUT_SCORE, kloutId));
+        return new KloutScore(data);
+    }
+
+    private Object callJSON(String request) throws KloutException {
         URL url;
         try {
-            urlString = getRequestString(requestType, kloutIds);
-            url = new URL(urlString);
+            url = new URL(request);
         } catch (java.net.MalformedURLException e) {
             throw new KloutException("Failed to construct URL", e);
-        } catch (UnsupportedEncodingException ue) {
-            throw new KloutException("Failed to construct URL string", ue);
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Hitting URL: " + urlString);
+            logger.fine("Hitting URL: " + request);
         }
         HttpURLConnection conn;
         try {
             conn = getHttpURLConnection(url, "GET", null, false);
             if (conn.getResponseCode() != 200) {
-                throw new KloutException("Failed to get profile detail for \""
-                        + kloutIds + "\", HTTP status: "
+                throw new KloutException("Failed to get request \""
+                        + request + "\", HTTP status: "
                         + conn.getResponseCode() + " "
                         + conn.getResponseMessage());
             }
@@ -283,12 +202,11 @@ public class KloutImpl implements Klout {
             throw new KloutException("Failed to open connection", e);
         }
 
-        Map<String, Object> attributes;
+        Object attributes;
         InputStream inputStream = null;
         try {
             inputStream = conn.getInputStream();
-            attributes = (Map<String, Object>) new JSONParser()
-                    .parse(new InputStreamReader(inputStream));
+            attributes = new JSONParser().parse(new InputStreamReader(inputStream));
         } catch (Exception e) {
             throw new KloutException("Failed to read/parse response", e);
         } finally {
@@ -301,24 +219,41 @@ public class KloutImpl implements Klout {
                 }
             }
         }
-
-        Object status = attributes.get("status");
-        if (status == null) {
-            throw new KloutException("No status element found");
-        } else if (!"200".equals(status.toString())) {
-            throw new ProfileNotFoundException("Profile for "
-                    + kloutIds + " not found, status=" + status
-                    + " (" + attributes.get("status_message") + ")");
-        }
-
-        return (List<Map<String, Object>>) attributes.get("users");
+        // TODO error handling
+        return attributes;
     }
 
-    private String getRequestString(RequestType requestType, List<Long> ids) throws UnsupportedEncodingException {
-        // TODO
+    /**
+     * Build a query string to get klout info
+     *
+     * @param requestType Type of sent request
+     * @param id          Klout ID
+     * @return Request string
+     */
+    protected String getRequestString(RequestType requestType, Long id) {
         // build user list string
         // add user list and api key
-        return null;
+        StringBuilder sb = new StringBuilder(rootUrl);
+        String request = requestType.getPath(id);
+        sb.append(request);
+        sb.append("?key=").append(apiKey);
+        return sb.toString();
+    }
+
+    /**
+     * Build a query string to get Klout ID
+     *
+     * @param identityType Type of an identity request is sent with
+     * @param id           Identity itself (numeric or name)
+     * @return Request string
+     */
+    protected String getIdentityRequestString(IdentityType identityType,
+                                              Object id) {
+        StringBuilder sb = new StringBuilder(rootUrl);
+        String request = identityType.getPath(id);
+        sb.append(request);
+        sb.append("key=").append(apiKey);
+        return sb.toString();
     }
 
 
