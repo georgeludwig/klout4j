@@ -11,9 +11,9 @@ import org.klout4j.model.Topics;
  */
 public interface Klout {
 
-    Long getKloutId(Long twitterId);
+    Long getKloutId(Long twitterId) throws KloutException;
 
-    Long getKloutId(String twitterScreenName);
+    Long getKloutId(String twitterScreenName) throws KloutException;
 
     KloutScore kloutScore(Long kloutId) throws KloutException;
 

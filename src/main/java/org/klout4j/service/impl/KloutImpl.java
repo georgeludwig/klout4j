@@ -1,5 +1,6 @@
 package org.klout4j.service.impl;
 
+import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.klout4j.exception.KloutException;
 import org.klout4j.exception.ProfileNotFoundException;
@@ -8,10 +9,9 @@ import org.klout4j.service.Klout;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,13 +117,27 @@ public class KloutImpl implements Klout {
         this.readTimeout = readTimeout;
     }
 
-    public Long getKloutId(Long twitterId) {
-        // TODO
+    @SuppressWarnings("unchecked")
+    public Long getKloutId(Long twitterId) throws KloutException {
+        Object response = callJSON(getIdentityRequestString(IdentityType.twitterId, twitterId));
+        if (response != null && response instanceof Map) {
+            Map<String, String> map = (Map<String, String>) response;
+            if (map.containsKey("id")) {
+                return Long.parseLong(map.get("id"));
+            }
+        }
         return null;
     }
 
-    public Long getKloutId(String twitterScreenName) {
-        // TODO
+    @SuppressWarnings("unchecked")
+    public Long getKloutId(String twitterScreenName) throws KloutException {
+        Object response = callJSON(getIdentityRequestString(IdentityType.twitterScreenName, twitterScreenName));
+        if (response != null && response instanceof Map) {
+            Map<String, String> map = (Map<String, String>) response;
+            if (map.containsKey("id")) {
+                return Long.parseLong(map.get("id"));
+            }
+        }
         return null;
     }
 
@@ -137,9 +151,10 @@ public class KloutImpl implements Klout {
      * @throws ProfileNotFoundException
      * @throws KloutException
      */
+    @SuppressWarnings("unchecked")
     public KloutUser showUser(Long kloutId)
             throws ProfileNotFoundException, KloutException {
-        Map<String, Object> data = callJSON(RequestType.SHOW_USER, kloutId);
+        Map<String, Object> data = (Map<String, Object>) callJSON(getRequestString(RequestType.SHOW_USER, kloutId));
         return new KloutUser(data);
     }
 
@@ -152,37 +167,34 @@ public class KloutImpl implements Klout {
      * @throws ProfileNotFoundException
      * @throws KloutException
      */
+    @SuppressWarnings("unchecked")
     public Topics topics(Long kloutId) throws ProfileNotFoundException, KloutException {
-        // TODO implement
-        return null;
-    }
-
-    public KloutScore kloutScore(Long kloutId) throws KloutException {
-        // TODO implement
-        return null;
+        JSONArray data = (JSONArray) callJSON(getRequestString(RequestType.TOPICS, kloutId));
+        return new Topics(data);
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> callJSON(RequestType requestType, Long kloutId) throws KloutException {
-        String urlString;
+    public KloutScore kloutScore(Long kloutId) throws KloutException {
+        Map<String, Object> data = (Map<String, Object>) callJSON(getRequestString(RequestType.KLOUT_SCORE, kloutId));
+        return new KloutScore(data);
+    }
+
+    private Object callJSON(String request) throws KloutException {
         URL url;
         try {
-            urlString = getRequestString(requestType, kloutId);
-            url = new URL(urlString);
+            url = new URL(request);
         } catch (java.net.MalformedURLException e) {
             throw new KloutException("Failed to construct URL", e);
-        } catch (UnsupportedEncodingException ue) {
-            throw new KloutException("Failed to construct URL string", ue);
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Hitting URL: " + urlString);
+            logger.fine("Hitting URL: " + request);
         }
         HttpURLConnection conn;
         try {
             conn = getHttpURLConnection(url, "GET", null, false);
             if (conn.getResponseCode() != 200) {
-                throw new KloutException("Failed to get profile detail for \""
-                        + kloutId + "\", HTTP status: "
+                throw new KloutException("Failed to get request \""
+                        + request + "\", HTTP status: "
                         + conn.getResponseCode() + " "
                         + conn.getResponseMessage());
             }
@@ -190,12 +202,11 @@ public class KloutImpl implements Klout {
             throw new KloutException("Failed to open connection", e);
         }
 
-        Map<String, Object> attributes;
+        Object attributes;
         InputStream inputStream = null;
         try {
             inputStream = conn.getInputStream();
-            attributes = (Map<String, Object>) new JSONParser()
-                    .parse(new InputStreamReader(inputStream));
+            attributes = new JSONParser().parse(new InputStreamReader(inputStream));
         } catch (Exception e) {
             throw new KloutException("Failed to read/parse response", e);
         } finally {
@@ -216,11 +227,10 @@ public class KloutImpl implements Klout {
      * Build a query string to get klout info
      *
      * @param requestType Type of sent request
-     * @param id Klout ID
+     * @param id          Klout ID
      * @return Request string
-     * @throws UnsupportedEncodingException
      */
-    protected String getRequestString(RequestType requestType, Long id) throws UnsupportedEncodingException {
+    protected String getRequestString(RequestType requestType, Long id) {
         // build user list string
         // add user list and api key
         StringBuilder sb = new StringBuilder(rootUrl);
@@ -230,28 +240,15 @@ public class KloutImpl implements Klout {
         return sb.toString();
     }
 
-    private String createIdsString(List<Long> ids) {
-        StringBuilder sb = new StringBuilder();
-        if (ids != null && ids.size() > 0) {
-            for (Iterator<Long> it = ids.iterator(); it.hasNext(); ) {
-                sb.append(it.next());
-                if (it.hasNext()) {
-                    sb.append(",");
-                }
-            }
-        }
-        return sb.toString();
-    }
-
     /**
      * Build a query string to get Klout ID
      *
      * @param identityType Type of an identity request is sent with
      * @param id           Identity itself (numeric or name)
      * @return Request string
-     * @throws UnsupportedEncodingException
      */
-    protected String getIdentityRequestString(IdentityType identityType, Object id) throws UnsupportedEncodingException {
+    protected String getIdentityRequestString(IdentityType identityType,
+                                              Object id) {
         StringBuilder sb = new StringBuilder(rootUrl);
         String request = identityType.getPath(id);
         sb.append(request);

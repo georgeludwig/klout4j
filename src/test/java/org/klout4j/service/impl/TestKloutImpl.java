@@ -4,9 +4,7 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.klout4j.AbstractKloutTest;
-import org.klout4j.model.IdentityType;
-import org.klout4j.model.KloutUser;
-import org.klout4j.model.RequestType;
+import org.klout4j.model.*;
 
 /**
  * @author Marina Chernyavskaya
@@ -82,5 +80,42 @@ public class TestKloutImpl extends AbstractKloutTest {
         Assert.assertNotNull(user.getScreenName());
         Assert.assertTrue(user.getScore() > 0);
         Assert.assertNotNull(user.getBucket());
+    }
+
+    @Test
+    public void testGetScore() throws Exception {
+        KloutScore result = klout.kloutScore(KLOUT_ID);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getScore());
+        Assert.assertNotNull(result.getScore());
+        Assert.assertTrue(result.getScore() > 0);
+    }
+
+    @Test
+    public void testGetTopics() throws Exception {
+        Topics result = klout.topics(KLOUT_ID);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getTopics());
+        Assert.assertTrue(result.getTopics().size() > 0);
+        for (Topics.Topic topic : result.getTopics()) {
+            Assert.assertNotNull(topic.getId());
+            Assert.assertTrue(topic.getId() > 0);
+            Assert.assertNotNull(topic.getDisplayName());
+            Assert.assertNotNull(topic.getSlug());
+        }
+    }
+
+    @Test
+    public void testGetKloutIdByTwitterId() throws Exception {
+        long twitterId = 500042487;
+        Long result = klout.getKloutId(twitterId);
+        Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testGetKloutIdByTwitterName() throws Exception {
+        String name = "aplusk";
+        Long result = klout.getKloutId(name);
+        Assert.assertNotNull(result);
     }
 }

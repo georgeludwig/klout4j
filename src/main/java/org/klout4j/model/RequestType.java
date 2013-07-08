@@ -10,9 +10,9 @@ import java.text.MessageFormat;
  */
 public enum RequestType {
     SHOW_USER("user.json/{0}"),
-    KLOUT_SCORE("/user.json/{0}/score"),
-    TOPICS("/user.json/{0}/topics"),
-    INFLUENCE("/user.json/{0}/influence");
+    KLOUT_SCORE("user.json/{0}/score"),
+    TOPICS("user.json/{0}/topics"),
+    INFLUENCE("user.json/{0}/influence");
 
     private String path;
 
