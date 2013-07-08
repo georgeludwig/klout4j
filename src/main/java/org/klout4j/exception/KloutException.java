@@ -1,34 +1,29 @@
-package org.klout4j;
+package org.klout4j.exception;
 
 /**
  * 
  * The root exception for errors encountered while communicating with the Klout API.
  *
- * @see Klout
+ * @see org.klout4j.service.impl.KloutImpl
  */
 public class KloutException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Empty constructor.
-	 */
-	KloutException() {}
-    
-	/**
 	 * Constructor with message.
-	 * @param message
+	 * @param message Error message
 	 */
-    KloutException(String message) {
+    public KloutException(String message) {
         super(message);
     }
 
     /**
      * Constructor with message and root cause.
-     * @param message
-     * @param t
+     * @param message Error message
+     * @param t Throwable up the stack
      */
-    KloutException(String message, Throwable t) {
+    public KloutException(String message, Throwable t) {
         super(message, t);
     }
 }
